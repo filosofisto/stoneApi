@@ -1,6 +1,7 @@
 defmodule StoneApi.Accounts.FinancialAccount do
   use Ecto.Schema
   import Ecto.Changeset
+  import Ecto.Query, only: [from: 2]
   alias StoneApi.Accounts.FinancialAccount
 
   schema "financial_account" do

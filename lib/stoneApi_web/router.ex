@@ -31,7 +31,8 @@ defmodule StoneApiWeb.Router do
   scope "/api/v1", StoneApiWeb do
     pipe_through [:api, :jwt_authenticated]
 
-    get "/my_user", UserController, :show
+    get  "/my_user", UserController, :show
+    post "/withdrawal", TransactionController, :withdrawal
   end
 
   # Other scopes may use custom stacks.

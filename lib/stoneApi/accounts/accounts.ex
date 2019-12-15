@@ -106,6 +106,68 @@ defmodule StoneApi.Accounts do
   end
 
   @doc """
+    Withdrawal operation
+
+    ## Examples
+
+
+
+  """
+  def withdrawal(user, value) do
+    Logger.debug "--> Withdrawal Transaction <--"
+    Repo.transaction(fn -> 
+      financial_account = get_financial_account_by_user(user)
+
+      new_balance = financial_account.balance - value
+
+      if (new_balance >= 0) do
+        update_balance(financial_account, new_balance)
+        withdrawal_transaction(financial_account, value)
+        Logger.debug("Operation success")
+        true
+      else
+        Logger.warn("Insuficient balance")
+        false
+      end
+    end)
+  end
+
+  defp get_financial_account_by_user(user) do
+    financial_account_id = get_financial_account_id_by_user(user)
+    Logger.debug("Get Financial Account from User #{user.id} => #{financial_account_id}")
+
+    financial_account = Repo.get(FinancialAccount, financial_account_id)
+    Logger.debug("Actual balance: #{financial_account.balance}")
+
+    financial_account
+  end
+
+  defp get_financial_account_id_by_user(user) do
+    query = 
+      from f in "financial_account",
+      where: f.user_id == ^user.id,
+      select: f.id
+
+    Repo.one(query)
+  end
+
+  defp withdrawal_transaction(financial_account, value) do
+    transaction = Transaction.changeset(
+      %Transaction{},
+      %{value: value, account_origin_id: financial_account.id}
+    ) |> Repo.insert()
+    Logger.debug("Transaction inserted")
+
+    transaction
+  end
+
+  defp update_balance(financial_account, new_balance) do
+    financial_account_changeset = Ecto.Changeset.change financial_account, balance: new_balance 
+    Repo.update financial_account_changeset
+    Logger.debug("New balance: #{new_balance} updated")
+  end
+
+  @doc """
   Updates a user.
 
   ## Examples
