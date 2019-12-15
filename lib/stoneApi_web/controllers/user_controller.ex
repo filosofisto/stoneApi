@@ -3,6 +3,7 @@ defmodule StoneApiWeb.UserController do
 
   alias StoneApi.Accounts
   alias StoneApi.Accounts.User
+  alias StoneApi.Accounts.FinancialAccount
   alias StoneApi.Guardian
 
   action_fallback StoneApiWeb.FallbackController

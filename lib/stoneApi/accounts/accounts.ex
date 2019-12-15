@@ -4,8 +4,12 @@ defmodule StoneApi.Accounts do
   """
 
   import Ecto.Query, warn: false
+  import Ecto.Changeset
+  require Logger
   alias StoneApi.Repo
   alias StoneApi.Accounts.User
+  alias StoneApi.Accounts.FinancialAccount
+  alias StoneApi.Accounts.Transaction
   alias StoneApi.Guardian
   import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
 
@@ -83,9 +87,22 @@ defmodule StoneApi.Accounts do
 
   """
   def create_user(attrs \\ %{}) do
-    %User{}
-    |> User.changeset(attrs)
-    |> Repo.insert()
+    # Create User 
+    user = User.changeset(%User{}, attrs)
+    { status_user, changeset_user } = Repo.insert(user)
+    Logger.debug("status: #{status_user}")
+    Logger.debug("user changeset: #{inspect(changeset_user)}")
+
+    # Create FinancialAccount with 1000.0 balance 
+    financial_account = FinancialAccount.changeset(
+      %FinancialAccount{}, 
+      %{user_id: changeset_user.id, balance: 1000.0}
+    )
+    { status_financial_account, changeset_financial_account } = Repo.insert(financial_account)
+    Logger.debug("status: #{status_financial_account}")
+    Logger.debug("user changeset: #{inspect(changeset_financial_account)}")
+
+    { status_user, changeset_user }  
   end
 
   @doc """
