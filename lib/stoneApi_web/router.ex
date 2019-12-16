@@ -33,6 +33,7 @@ defmodule StoneApiWeb.Router do
 
     get  "/my_user", UserController, :show
     post "/withdrawal", TransactionController, :withdrawal
+    post "/transfer", TransactionController, :transfer
   end
 
   # Other scopes may use custom stacks.

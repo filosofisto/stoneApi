@@ -87,22 +87,26 @@ defmodule StoneApi.Accounts do
 
   """
   def create_user(attrs \\ %{}) do
-    # Create User 
-    user = User.changeset(%User{}, attrs)
-    { status_user, changeset_user } = Repo.insert(user)
-    Logger.debug("status: #{status_user}")
-    Logger.debug("user changeset: #{inspect(changeset_user)}")
+    Logger.debug "--> Create User <--"
+#    Repo.transaction(fn ->
+      # Create User 
+      user = User.changeset(%User{}, attrs)
+      { status_user, changeset_user } = Repo.insert(user)
+      Logger.debug("status: #{status_user}")
+      Logger.debug("user changeset: #{inspect(changeset_user)}")
 
-    # Create FinancialAccount with 1000.0 balance 
-    financial_account = FinancialAccount.changeset(
-      %FinancialAccount{}, 
-      %{user_id: changeset_user.id, balance: 1000.0}
-    )
-    { status_financial_account, changeset_financial_account } = Repo.insert(financial_account)
-    Logger.debug("status: #{status_financial_account}")
-    Logger.debug("user changeset: #{inspect(changeset_financial_account)}")
+      # Create FinancialAccount with 1000.0 balance 
+      financial_account = FinancialAccount.changeset(
+        %FinancialAccount{}, 
+        %{user_id: changeset_user.id, balance: 1000.0}
+      )
+      { status_financial_account, changeset_financial_account } = Repo.insert(financial_account)
+      Logger.debug("status: #{status_financial_account}")
+      Logger.debug("financial_account changeset: #{inspect(changeset_financial_account)}")
+      Logger.debug("Operation success")
 
-    { status_user, changeset_user }  
+      { status_user, changeset_user }
+#    end)
   end
 
   @doc """
@@ -123,6 +127,7 @@ defmodule StoneApi.Accounts do
       if (new_balance >= 0) do
         update_balance(financial_account, new_balance)
         withdrawal_transaction(financial_account, value)
+        # TODO: Send email for client
         Logger.debug("Operation success")
         true
       else
@@ -130,6 +135,46 @@ defmodule StoneApi.Accounts do
         false
       end
     end)
+  end
+
+  def transfer(user, value, financial_account_target_id) do
+    Logger.debug "--> Transfer Transaction <--"
+    Repo.transaction(fn -> 
+      financial_account_origin = get_financial_account_by_user(user)
+
+      new_balance_origin = financial_account_origin.balance - value
+
+      if (new_balance_origin >= 0) do
+        update_balance(financial_account_origin, new_balance_origin)
+        
+        financial_account_target = get_financial_account(financial_account_target_id)
+        new_balance_target = financial_account_target.balance + value
+        update_balance(financial_account_target, new_balance_target)
+
+        transfer_transaction(financial_account_origin, financial_account_target, value)
+
+        # TODO: Send email for client
+        Logger.debug("Operation success")
+        true
+      else
+        Logger.warn("Insuficient balance")
+        false
+      end
+    end)
+  end
+
+  defp transfer_transaction(financial_account_origin, financial_account_target, value) do
+    transaction = Transaction.changeset(
+      %Transaction{},
+      %{value: value, account_origin_id: financial_account_origin.id, account_target_id: financial_account_target.id}
+    ) |> Repo.insert()
+    Logger.debug("Transaction inserted")
+
+    transaction
+  end
+
+  defp get_financial_account(id) do
+    Repo.get(FinancialAccount, id)
   end
 
   defp get_financial_account_by_user(user) do

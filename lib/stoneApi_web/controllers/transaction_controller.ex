@@ -37,6 +37,17 @@ defmodule StoneApiWeb.TransactionController do
     end
   end
 
+  def transfer(conn, %{"value" => value, "financial_account_target_id" => financial_account_target_id}) do
+    user = Guardian.Plug.current_resource(conn)
+    { status, operation_success } = Accounts.transfer(user, value, financial_account_target_id)
+
+    if operation_success do
+      send_resp(conn, :created, "")
+    else
+      send_resp(conn, :unprocessable_entity, "Insufficient funds")
+    end
+  end
+
   # def show(conn, _params) do
   #   # user = Accounts.get_user!(id)
   #   # render(conn, "show.json", user: user)

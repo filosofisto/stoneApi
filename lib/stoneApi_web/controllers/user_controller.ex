@@ -17,11 +17,19 @@ defmodule StoneApiWeb.UserController do
     with {:ok, %User{} = user} <- Accounts.create_user(user_params),
          {:ok, token, _claims} <- Guardian.encode_and_sign(user) do
       conn |> render("jwt.json", jwt: token)
-      # |> put_status(:created)
-      # |> put_resp_header("location", user_path(conn, :show, user))
-      # |> render("show.json", user: user)
     end
   end
+
+  # def withdrawal(conn, %{"value" => value}) do
+  #   user = Guardian.Plug.current_resource(conn)
+  #   { status, operation_success } = Accounts.withdrawal(user, value)
+
+  #   if operation_success do
+  #     send_resp(conn, :created, "")
+  #   else
+  #     send_resp(conn, :unprocessable_entity, "Insufficient funds")
+  #   end
+  # end
 
   def sign_in(conn, %{"email" => email, "password" => password}) do
     case Accounts.token_sign_in(email, password) do
@@ -33,8 +41,6 @@ defmodule StoneApiWeb.UserController do
   end
 
   def show(conn, _params) do
-    # user = Accounts.get_user!(id)
-    # render(conn, "show.json", user: user)
     user = Guardian.Plug.current_resource(conn)
     conn |> render("user.json", user: user)
   end
