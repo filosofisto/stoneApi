@@ -12,6 +12,7 @@ defmodule StoneApi.Accounts do
   alias StoneApi.Accounts.Transaction
   alias StoneApi.Guardian
   import Comeonin.Bcrypt, only: [checkpw: 2, dummy_checkpw: 0]
+  @default_balance 1000.0
 
   def token_sign_in(email, password) do
     case email_password_auth(email, password) do
@@ -75,7 +76,7 @@ defmodule StoneApi.Accounts do
   def get_user!(id), do: Repo.get!(User, id)
 
   @doc """
-  Creates a user.
+  Creates a user and initialize his financial account with 1000.0 balance
 
   ## Examples
 
@@ -98,7 +99,7 @@ defmodule StoneApi.Accounts do
       # Create FinancialAccount with 1000.0 balance 
       financial_account = FinancialAccount.changeset(
         %FinancialAccount{}, 
-        %{user_id: changeset_user.id, balance: 1000.0}
+        %{user_id: changeset_user.id, balance: @default_balance}
       )
       { status_financial_account, changeset_financial_account } = Repo.insert(financial_account)
       Logger.debug("status: #{status_financial_account}")
@@ -110,7 +111,8 @@ defmodule StoneApi.Accounts do
   end
 
   @doc """
-    Withdrawal operation
+    Withdrawal operation.
+    It is not permitted negative balance.
 
     ## Examples
 
@@ -137,6 +139,11 @@ defmodule StoneApi.Accounts do
     end)
   end
 
+  @doc """
+    Transfer Operation.
+    It is not permitted negative balance.
+
+  """
   def transfer(user, value, financial_account_target_id) do
     Logger.debug "--> Transfer Transaction <--"
     Repo.transaction(fn -> 
@@ -163,7 +170,14 @@ defmodule StoneApi.Accounts do
     end)
   end
 
+  @doc """
+    Insert a transfer record for Tranfer Operation.
+  """
   defp transfer_transaction(financial_account_origin, financial_account_target, value) do
+    unless financial_account_origin.id != financial_account_target.id do
+      raise ArgumentError, message: "Financial Account must be different for transfer operation"
+    end
+
     transaction = Transaction.changeset(
       %Transaction{},
       %{value: value, account_origin_id: financial_account_origin.id, account_target_id: financial_account_target.id}
@@ -173,10 +187,16 @@ defmodule StoneApi.Accounts do
     transaction
   end
 
+  @doc """
+    Returns FinancialAccount by id (pk).
+  """
   defp get_financial_account(id) do
     Repo.get(FinancialAccount, id)
   end
 
+  @doc """
+    Return FinancialAccount by user (logged - use token).
+  """
   defp get_financial_account_by_user(user) do
     financial_account_id = get_financial_account_id_by_user(user)
     Logger.debug("Get Financial Account from User #{user.id} => #{financial_account_id}")
@@ -187,6 +207,9 @@ defmodule StoneApi.Accounts do
     financial_account
   end
 
+  @doc """
+    Return FinancialAccount id by user (logged - use token).
+  """
   defp get_financial_account_id_by_user(user) do
     query = 
       from f in "financial_account",
@@ -196,6 +219,9 @@ defmodule StoneApi.Accounts do
     Repo.one(query)
   end
 
+  @doc """
+    Insert a transaction operation representing a withdrawal.
+  """
   defp withdrawal_transaction(financial_account, value) do
     transaction = Transaction.changeset(
       %Transaction{},
@@ -206,6 +232,9 @@ defmodule StoneApi.Accounts do
     transaction
   end
 
+  @doc """
+    Update FinancialAccount balance.
+  """
   defp update_balance(financial_account, new_balance) do
     financial_account_changeset = Ecto.Changeset.change financial_account, balance: new_balance 
     Repo.update financial_account_changeset
