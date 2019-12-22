@@ -1,0 +1,102 @@
+
+<div class="jumbotron">
+  <h3>Total of Transactions</h3>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <td>Total</td>
+    </thead>
+    <tbody>
+    <tr>
+        <td><%= currency_format(@total) %></td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="jumbotron">
+  <h3>Transactions Per Year</h3>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <td>Year</td>
+        <td>Total</td>
+    </thead>
+    <tbody>
+    <%= for item <- @by_year do %>
+    <tr>
+        <td><%= trunc(item.year) %></td>
+        <td><%= currency_format(item.value) %></td>
+    </tr>
+    <% end %>
+    </tbody>
+</table>
+
+<div class="jumbotron">
+  <h3>Transactions Per Month</h3>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <td>Month</td>
+        <td>Year</td>
+        <td>Total</td>
+    </thead>
+    <tbody>
+    <%= for item <- @by_month do %>
+    <tr>
+        <td><%= trunc(item.month) %></td>
+        <td><%= trunc(item.year) %></td>
+        <td><%= currency_format(item.value) %></td>
+    </tr>
+    <% end %>
+    </tbody>
+</table>
+
+<div class="jumbotron">
+  <h3>Transactions Per Day</h3>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <td>Day</td>
+        <td>Total</td>
+    </thead>
+    <tbody>
+    <%= for day <- @by_day do %>
+    <tr>
+        <td><%= format_date(day.date) %></td>
+        <td><%= currency_format(day.value) %></td>
+    </tr>
+    <% end %>
+    </tbody>
+</table>
+
+<div class="jumbotron">
+  <h3>All Transactions</h3>
+  <h5>Bonus</h5>
+</div>
+
+<table class="table table-striped">
+    <thead>
+        <td>#</td>
+        <td>Date/time Op.</td>
+        <td>Type</td>
+        <td>Value</td>
+        <td>From Account</td>
+        <td>To Account</td>
+    </thead>
+    <tbody>
+    <%= for transaction <- @transactions do %>
+    <tr>
+        <td><%= transaction.id %></td>
+        <td><%= format_datetime(transaction.inserted_at) %></td>
+        <td><%= transaction_type(transaction) %></td>
+        <td><%= currency_format(transaction.value) %></td>
+        <td><%= transaction.account_origin_id %></td>
+        <td><%= to_account(transaction) %></td>
+    </tr>
+    <% end %>
+    </tbody>
+</table>

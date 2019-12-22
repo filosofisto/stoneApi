@@ -1,13 +1,13 @@
 defmodule StoneApiWeb.Router do
   use StoneApiWeb, :router
 
-  # pipeline :browser do
-  #   plug :accepts, ["html"]
-  #   plug :fetch_session
-  #   plug :fetch_flash
-  #   plug :protect_from_forgery
-  #   plug :put_secure_browser_headers
-  # end
+   pipeline :browser do
+     plug :accepts, ["html"]
+     plug :fetch_session
+     plug :fetch_flash
+     plug :protect_from_forgery
+     plug :put_secure_browser_headers
+   end
 
   pipeline :api do
     plug :accepts, ["json"]
@@ -34,6 +34,12 @@ defmodule StoneApiWeb.Router do
     get  "/my_user", UserController, :show
     post "/withdrawal", TransactionController, :withdrawal
     post "/transfer", TransactionController, :transfer
+  end
+
+  scope "/web/v1", StoneApiWeb do
+    pipe_through [:browser]
+
+    get "/report", PageController, :report
   end
 
   # Other scopes may use custom stacks.

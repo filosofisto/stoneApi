@@ -46,6 +46,112 @@ defmodule StoneApi.Accounts do
     end
   end
 
+  def list_transactions do
+    Transaction |> order_by(desc: :inserted_at) |> Repo.all()
+  end
+
+  @doc """
+    Calculate total value grouped by day
+  """
+  def total_by_day do
+    results = Ecto.Adapters.SQL.query!(
+      StoneApi.Repo,
+      """
+        select date(inserted_at) as date, sum(value) as value
+        from public.transaction
+        group by date(inserted_at)
+      """
+    )
+
+    columns = results.columns
+    Logger.info("columns: #{inspect(columns)}")
+
+    rows = results.rows
+    Logger.info("rows: #{inspect(rows)}")
+
+    array = for item <- rows do
+      %{:date => Enum.at(item, 0), :value => Enum.at(item, 1)}
+    end
+  end
+
+  @doc """
+    Calculate total value grouped by month/year
+  """
+  def total_by_month do
+    results = Ecto.Adapters.SQL.query!(
+      StoneApi.Repo,
+      """
+        select q.month, q.year, sum(q.value) as value
+        from (
+          select extract(month from inserted_at) as month, extract(year from inserted_at) as year, value as value
+          from public.transaction
+        ) as q
+        group by q.month, q.year
+        order by q.year desc, q.month
+      """
+    )
+
+    columns = results.columns
+    Logger.info("columns: #{inspect(columns)}")
+
+    rows = results.rows
+    Logger.info("rows: #{inspect(rows)}")
+
+    array = for item <- rows do
+      %{:month => Enum.at(item, 0), :year => Enum.at(item, 1), :value => Enum.at(item, 2)}
+    end
+  end
+
+  @doc """
+    Calculate total value grouped by year
+  """
+  def total_by_year do
+    results = Ecto.Adapters.SQL.query!(
+      StoneApi.Repo,
+      """
+        select q.year, sum(q.value) as value
+        from (select extract(year from inserted_at) as year, value as value from public.transaction) as q
+        group by q.year
+        order by q.year desc
+      """
+    )
+
+    columns = results.columns
+    Logger.info("columns: #{inspect(columns)}")
+
+    rows = results.rows
+    Logger.info("rows: #{inspect(rows)}")
+
+    array = for item <- rows do
+      %{:year => Enum.at(item, 0), :value => Enum.at(item, 1)}
+    end
+  end
+
+  @doc """
+    Calculate total of transactions
+  """
+  def total do
+    results = Ecto.Adapters.SQL.query!(
+      StoneApi.Repo,
+      """
+        select sum(value) as value
+        from public.transaction
+      """
+    )
+
+    columns = results.columns
+    Logger.info("columns: #{inspect(columns)}")
+
+    rows = results.rows
+    Logger.info("rows: #{inspect(rows)}")
+
+#    array = for item <- rows do
+#      %{:value => Enum.at(item, 0)}
+#    end
+
+    Enum.at(Enum.at(rows, 0), 0)
+  end
+
   @doc """
   Returns the list of users.
 
