@@ -15,7 +15,7 @@ use Mix.Config
 # which you typically run after static files are built.
 config :stoneApi, StoneApiWeb.Endpoint,
   load_from_system_env: true,
-  url: [host: "example.com", port: 80],
+  url: [host: Application.get_env(:stoneApi, :app_hostname), port: Application.get_env(:stoneApi, :app_port)],
   cache_static_manifest: "priv/static/cache_manifest.json"
 
 # Do not print debug messages in production
@@ -61,4 +61,16 @@ config :logger, level: :info
 
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
-import_config "prod.secret.exs"
+#import_config "prod.secret.exs"
+
+# Which server to start per endpoint:
+#
+config :stoneApi, StoneApiWeb.Endpoint, server: true
+
+config :stoneApi, StoneApi.Repo,
+       adapter: Ecto.Adapters.Postgres,
+       username: "postgres",
+       password: "postgres",
+       database: "stoneapi_dev",
+       hostname: "localhost",
+       pool_size: 10
