@@ -15,6 +15,6 @@ do
   sleep 2
 done
 
-./prod/rel/prd/bin/prd eval StoeApi.Release.migrate
+./prod/rel/prd/bin/prd eval StoneApi.Release.migrate
 
 ./prod/rel/prd/bin/prd start
