@@ -6,6 +6,8 @@
 use Mix.Config
 #import Config
 
+config :phoenix, :json_library, Jason
+
 # General application configuration
 config :stoneApi,
   ecto_repos: [StoneApi.Repo]
