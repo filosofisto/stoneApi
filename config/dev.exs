@@ -50,7 +50,7 @@ config :phoenix, :stacktrace_depth, 20
 
 # Configure your database
 config :stoneApi, StoneApi.Repo,
-  adapter: Ecto.Adapters.Postgres,
+#  adapter: Ecto.Adapters.Postgres,
   username: "postgres",
   password: "postgres",
   database: "stoneapi_dev",

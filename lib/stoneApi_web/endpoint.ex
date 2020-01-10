@@ -2,6 +2,9 @@ defmodule StoneApiWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :stoneApi
 
   socket "/socket", StoneApiWeb.UserSocket
+#  socket "/socket", StoneApiWeb.UserSocket,
+#    websocket: true, # or list of options
+#    longpoll: [check_origin: ...]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -24,7 +27,8 @@ defmodule StoneApiWeb.Endpoint do
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],
-    json_decoder: Poison
+#    json_decoder: Poison
+    json_decoder: Jason
 
   plug Plug.MethodOverride
   plug Plug.Head
@@ -47,8 +51,9 @@ defmodule StoneApiWeb.Endpoint do
   """
   def init(_key, config) do
     if config[:load_from_system_env] do
-#      port = System.get_env("PORT") || raise "expected the PORT environment variable to be set"
-      port = Application.get_env(:stoneApi, :app_port) || raise "expected the PORT environment variable to be set"
+      #port = System.get_env("PORT") || raise "expected the PORT environment variable to be set"
+      #port = Application.get_env(:stoineApi, :app_port) || raise "expected the PORT environment variable to be set"
+      port = 4000
       {:ok, Keyword.put(config, :http, [:inet6, port: port])}
     else
       {:ok, config}
