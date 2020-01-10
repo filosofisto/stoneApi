@@ -8,8 +8,7 @@ defmodule StoneApiWeb.PageView do
   end
 
   def format_date(date_tuple) do
-    { :ok, date } = Ecto.Date.cast(date_tuple)
-    "#{lz(date.day)}/#{lz(date.month)}/#{date.year}"
+    "#{lz(date_tuple.day)}/#{lz(date_tuple.month)}/#{date_tuple.year}"
   end
 
   def format_datetime(datetime) do
