@@ -68,7 +68,7 @@ config :logger, level: :info
 config :stoneApi, StoneApiWeb.Endpoint, server: true
 
 config :stoneApi, StoneApi.Repo,
-       adapter: Ecto.Adapters.Postgres,
+#       adapter: Ecto.Adapters.Postgres,
        username: "postgres",
        password: "postgres",
        database: "stoneapi_dev",

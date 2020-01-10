@@ -19,7 +19,7 @@ config :stoneApi,
 
 # Configure your database
 config :stoneApi, StoneApi.Repo,
-       adapter: Ecto.Adapters.Postgres,
+#       adapter: Ecto.Adapters.Postgres,
        username: db_user,
        password: db_password,
        database: "stoneapi_dev",
